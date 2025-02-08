@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import ExcelJS from "exceljs";
 import { Attendance } from "@/types/types";
-import { autoSizeColumns } from "@/lib/utils";
+import { autoSizeColumns, formatDate } from "@/lib/utils";
 import { FaFileExcel } from "react-icons/fa";
 
 export default function ExportExcelButton({ data }: { data: Attendance[] }) {
@@ -12,8 +12,8 @@ export default function ExportExcelButton({ data }: { data: Attendance[] }) {
         const sheet1 = workbook.addWorksheet("Attendances");
 
         let rows = data.map(({ user, in: inTime, out: outTime }) => {
-            const inDate = new Date(inTime).toLocaleDateString();
-            const outDate = outTime === "N/A" ? "" : new Date(outTime).toLocaleDateString();
+            const inDate = formatDate(inTime);
+            const outDate = outTime === "N/A" ? "" : formatDate(outTime);
             return [user, inDate, outDate];
         });
 

@@ -24,6 +24,28 @@ function extractDate(recordTime: string): string {
     return new Date(recordTime).toISOString().split("T")[0]; // Returns the date in 'YYYY-MM-DD' format
 }
 
+export function formatDate(recordTime: string): string {
+    const date = new Date(recordTime);
+
+    const Dateoptions: Intl.DateTimeFormatOptions = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    };
+
+    const TimeOptions: Intl.DateTimeFormatOptions = {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    };
+
+    const formattedDate = date.toLocaleDateString("en-US", Dateoptions); // This gives you MM/DD/YYYY
+    const formattedTime = date.toLocaleTimeString("en-US", TimeOptions); // This gives you HH:mm
+
+    // Combine both parts with a space
+    return formattedDate + " " + formattedTime;
+}
+
 export const autoSizeColumns = (worksheet: any) => {
     worksheet.columns.forEach((column: any) => {
         let maxLength = 0;
@@ -61,7 +83,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
         for (let i = 0; i < sortedRecords.length; i++) {
             const entryRecord = sortedRecords[i];
 
-            // Check if there's a corresponding "out" record in the same day for this "in"
+            // Check if there's a corresponding "out" record in the same day for the last "in"
             if (i + 1 < sortedRecords.length) {
                 const exitRecord = sortedRecords[i + 1];
 
@@ -73,8 +95,8 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
                     // If both records are from the same day, pair them
                     inOutTimes.push({
                         user: userMap[userId], // Lookup the name by userId
-                        in: entryRecord?.recordTime ?? "N/A",
-                        out: exitRecord?.recordTime ?? "N/A",
+                        in: entryRecord.recordTime ?? "N/A",
+                        out: exitRecord.recordTime ?? "N/A",
                     });
 
                     i++; // Skip the "out" record because it's paired now
@@ -96,6 +118,5 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
             }
         }
     });
-
     return inOutTimes;
 }
