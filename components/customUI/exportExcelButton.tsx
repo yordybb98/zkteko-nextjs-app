@@ -1,0 +1,56 @@
+"use client";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import ExcelJS from "exceljs";
+import { Attendance } from "@/types/types";
+import { autoSizeColumns } from "@/lib/utils";
+import { FaFileExcel } from "react-icons/fa";
+
+export default function ExportExcelButton({ data }: { data: Attendance[] }) {
+    const exportToExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const sheet1 = workbook.addWorksheet("Attendances");
+
+        let rows = data.map(({ user, in: inTime, out: outTime }) => {
+            const inDate = new Date(inTime).toLocaleDateString();
+            const outDate = outTime === "N/A" ? "" : new Date(outTime).toLocaleDateString();
+            return [user, inDate, outDate];
+        });
+
+        sheet1.addTable({
+            name: "Attendances",
+            ref: "A1",
+            headerRow: true,
+            style: {
+                theme: "TableStyleMedium2",
+                showRowStripes: true,
+            },
+            columns: [
+                { name: "Nombre", filterButton: true },
+                { name: "Entrada", filterButton: false },
+                { name: "Salida", filterButton: false },
+            ],
+            rows: rows,
+        });
+
+        autoSizeColumns(sheet1);
+
+        // Generate the Excel file as a buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Create a Blob from the buffer and create a download link
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "output.xlsx";
+
+        // Simulate a click to start the download
+        link.click();
+    };
+
+    return (
+        <Button onClick={exportToExcel}>
+            <FaFileExcel /> Export to Excel
+        </Button>
+    );
+}

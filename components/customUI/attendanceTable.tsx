@@ -16,8 +16,8 @@ export function AttendanceTable({ attendances }: { attendances: Attendance[] }) 
                 {attendances.map((attendance, index) => (
                     <TableRow key={index}>
                         <TableCell className="font-medium">{attendance.user}</TableCell>
-                        <TableCell>{attendance.in}</TableCell>
-                        <TableCell>{attendance.out}</TableCell>
+                        <TableCell>{new Date(attendance.in).toLocaleString()}</TableCell>
+                        <TableCell>{attendance.out === "N/A" ? "N/A" : new Date(attendance.out).toLocaleString()}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

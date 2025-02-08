@@ -20,6 +20,24 @@ function parseDate(dateString: string): number {
     return new Date(dateString).getTime();
 }
 
+function extractDate(recordTime: string): string {
+    return new Date(recordTime).toISOString().split("T")[0]; // Returns the date in 'YYYY-MM-DD' format
+}
+
+export const autoSizeColumns = (worksheet: any) => {
+    worksheet.columns.forEach((column: any) => {
+        let maxLength = 0;
+
+        column.eachCell((cell: any) => {
+            const cellValue = cell.value ? String(cell.value) : "";
+            maxLength = Math.max(maxLength, cellValue.length);
+            cell.alignment = { horizontal: "center", vertical: "middle" };
+        });
+
+        column.width = maxLength + 2; // Adding padding to the width
+    });
+};
+
 export function correlateEntriesAndExits(records: Record[], users: User[]): Attendance[] {
     const groupedByUser = groupByUser(records);
 
@@ -43,20 +61,33 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
         for (let i = 0; i < sortedRecords.length; i++) {
             const entryRecord = sortedRecords[i];
 
-            // We check if there's an "out" record for this "in" record
-            if (i + 1 < sortedRecords.length && sortedRecords[i + 1].deviceUserId === entryRecord.deviceUserId) {
-                // If the next record is the same user, it's an "out" for the "in" record
+            // Check if there's a corresponding "out" record in the same day for this "in"
+            if (i + 1 < sortedRecords.length) {
                 const exitRecord = sortedRecords[i + 1];
 
-                inOutTimes.push({
-                    user: userMap[userId], // Lookup the name by userId
-                    in: entryRecord?.recordTime ?? "N/A",
-                    out: exitRecord?.recordTime ?? "N/A",
-                });
+                // Check if both "in" and "out" are on the same day
+                const entryDate = extractDate(entryRecord.recordTime);
+                const exitDate = extractDate(exitRecord.recordTime);
 
-                i++; // Skip the "out" record because it's paired now
+                if (entryDate === exitDate) {
+                    // If both records are from the same day, pair them
+                    inOutTimes.push({
+                        user: userMap[userId], // Lookup the name by userId
+                        in: entryRecord?.recordTime ?? "N/A",
+                        out: exitRecord?.recordTime ?? "N/A",
+                    });
+
+                    i++; // Skip the "out" record because it's paired now
+                } else {
+                    // If the "out" record is not on the same day, pair the "in" with "N/A"
+                    inOutTimes.push({
+                        user: userMap[userId], // Lookup the name by userId
+                        in: entryRecord?.recordTime ?? "N/A",
+                        out: "N/A", // No exit for the last entry
+                    });
+                }
             } else {
-                // If there's no corresponding "out" record, pair the "in" with "N/A"
+                // If there's no corresponding "out" record (last entry of the day), pair the "in" with "N/A"
                 inOutTimes.push({
                     user: userMap[userId], // Lookup the name by userId
                     in: entryRecord?.recordTime ?? "N/A",
