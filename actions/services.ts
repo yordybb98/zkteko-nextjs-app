@@ -12,13 +12,15 @@ export async function getData(): Promise<Attendance[]> {
         // Get data in machine
         const users: User[] = (await zkInstance.getUsers()).data;
         const records: Record[] = (await zkInstance.getAttendances()).data;
-
         const finalResult = correlateEntriesAndExits(records, users);
+
+        // Sort descending by in time
+        const orderedResult = finalResult.sort((a, b) => new Date(b.in).getTime() - new Date(a.in).getTime());
 
         // Disconnect
         await zkInstance.disconnect();
 
-        return finalResult;
+        return orderedResult;
     } catch (e) {
         console.log(e);
         return [];
