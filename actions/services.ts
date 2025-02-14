@@ -23,6 +23,6 @@ export async function getData(): Promise<Attendance[]> {
         return orderedResult;
     } catch (e) {
         console.log(e);
-        return [];
+        throw e;
     }
 }

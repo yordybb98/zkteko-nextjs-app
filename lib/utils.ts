@@ -1,3 +1,4 @@
+import { SETTINGS } from "@/settings";
 import { Attendance, Record, User } from "@/types/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -120,3 +121,91 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
     });
     return inOutTimes;
 }
+
+export const normalizeData = async (data: Attendance[]): Promise<void> => {
+    /* //In/Out normalization offset
+    data.forEach((attendance) => {
+        attendance.in = normalizeDateEntry(attendance.in, "IN");
+        attendance.out = normalizeDateEntry(attendance.out, "OUT");
+    }); */
+
+    //Validate empty entries
+    console.log(validateEmptyEntries(data));
+};
+
+const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
+    const date = new Date(input);
+
+    //In entry validations
+    if (type === "IN") {
+        const minutesDifference = getMinutesDifference(date, SETTINGS.timeIn);
+
+        // minutes difference above
+        if (minutesDifference >= 0 && minutesDifference < SETTINGS.registryOffset) date.setMinutes(0, 0, 0);
+        // minutes difference below
+        else if (minutesDifference >= -SETTINGS.registryOffset && minutesDifference < 0) date.setHours(date.getHours() + 1, 0, 0, 0);
+    }
+    //Out entry validations
+    else if (type === "OUT") {
+        const minutesDifference = getMinutesDifference(date, SETTINGS.timeOut);
+
+        // minutes difference above
+        if (minutesDifference >= 0 && minutesDifference < SETTINGS.registryOffset) date.setMinutes(0, 0, 0);
+        // minutes difference below
+        else if (minutesDifference >= -SETTINGS.registryOffset && minutesDifference < 0) date.setHours(date.getHours() + 1, 0, 0, 0);
+    }
+    return date.toString();
+};
+
+function getMinutesDifference(dateInput: Date, timeString: string, absolute = false): number {
+    // Extract hours and minutes from the string
+    const [hours, minutes] = timeString.split(":").map(Number);
+
+    // Create a new Date object with the same year, month, and day as dateInput
+    const referenceDate = new Date(dateInput);
+    referenceDate.setHours(hours, minutes, 0, 0); // Set time to given hour & minutes
+
+    // Calculate difference in milliseconds
+    const differenceMs = dateInput.getTime() - referenceDate.getTime();
+
+    // Convert milliseconds to minutes
+    const differenceMinutes = Math.round(differenceMs / (1000 * 60)); // Returns difference in minutes
+
+    return absolute ? Math.abs(differenceMinutes) : differenceMinutes;
+}
+
+const validateEmptyEntries = (data: Attendance[]) => {
+    const errors: Attendance[] = [];
+    const groupedByUser: Record<string, Attendance[]> = {};
+
+    // Group records by user
+    data.forEach((entry) => {
+        if (!groupedByUser[entry.user]) groupedByUser[entry.user] = [];
+        groupedByUser[entry.user].push(entry);
+    });
+
+    // Validate each user's entries
+    Object.keys(groupedByUser).forEach((user) => {
+        let lastOutExists = true; // Assume first entry is valid
+
+        groupedByUser[user].forEach((attendance) => {
+            const hasIn = attendance.in !== "N/A";
+            const hasOut = attendance.out !== "N/A";
+
+            // ❌ Case: Out without a previous In
+            if (!hasIn && hasOut) {
+                errors.push(attendance);
+            }
+
+            // ❌ Case: Consecutive "in" without a previous "out"
+            if (hasIn && !lastOutExists) {
+                errors.push(attendance);
+            }
+
+            // Update tracking variable
+            lastOutExists = hasOut ? true : hasIn ? false : lastOutExists;
+        });
+    });
+
+    return { valid: errors.length === 0, errors };
+};

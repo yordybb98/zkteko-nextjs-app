@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Attendance } from "@/types/types";
+import { toast } from "react-toastify";
 const fakeData = [
     {
         user: "Dianelys Valhuerdy",
@@ -333,7 +334,11 @@ export default function ImportOdooButton({ data }: { data: Attendance[] }) {
                 body: JSON.stringify(data),
             });
             const res = await a.json();
-            console.log({ res });
+            if (res.success) {
+                toast("Data imported to Odoo", { type: "success" });
+            } else {
+                toast(`Failed to import: ${res.error}`, { type: "error" });
+            }
         } catch (e) {
             console.log(e);
         } finally {

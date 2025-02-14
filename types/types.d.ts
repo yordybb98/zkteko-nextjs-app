@@ -17,3 +17,11 @@ export type Attendance = {
     in: string;
     out: string;
 };
+
+export type Settings = {
+    timeIn: string;
+    timeOut: string;
+    lunchStart: string;
+    lunchEnd: string;
+    registryOffset: number;
+};
