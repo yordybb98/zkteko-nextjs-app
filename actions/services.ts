@@ -16,7 +16,7 @@ export async function getData(): Promise<Attendance[]> {
 
         // Sort descending by in time
         const orderedResult = finalResult.sort((a, b) => new Date(b.in).getTime() - new Date(a.in).getTime());
-
+        console.log(orderedResult);
         // Disconnect
         await zkInstance.disconnect();
 
