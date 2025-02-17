@@ -48,13 +48,11 @@ export function EditDataModal({ isOpen, onClose, data, onSubmit }: EditDataModal
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {editableData.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{item.user}</TableCell>
-                                    <TableCell>{new Date(item.in).toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        <DateTimePicker />
-                                    </TableCell>
+                            {editableData.map(({ id, in: inDate, out: outDate, user }) => (
+                                <TableRow key={id}>
+                                    <TableCell>{user}</TableCell>
+                                    <TableCell>{inDate === "N/A" ? <DateTimePicker /> : new Date(inDate).toLocaleString()}</TableCell>
+                                    <TableCell>{outDate === "N/A" ? <DateTimePicker /> : new Date(outDate).toLocaleString()}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
