@@ -25,6 +25,8 @@ export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
                 const newDate = new Date(date);
                 if (prev) {
                     newDate.setHours(prev.getHours(), prev.getMinutes());
+                } else {
+                    newDate.setHours(8, 0);
                 }
                 return newDate;
             });
