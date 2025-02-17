@@ -7,12 +7,13 @@ export type User = {
     userId: string;
 };
 
-export type Record = {
+export type AttendanceRecord = {
     deviceUserId: string;
     recordTime: string;
 };
 
 export type Attendance = {
+    id: string;
     user: string;
     in: string;
     out: string;

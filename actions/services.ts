@@ -1,5 +1,5 @@
-import { correlateEntriesAndExits } from "@/lib/utils";
-import { Attendance, Record, User } from "@/types/types";
+import { correlateEntriesAndExits, orderAttendance } from "@/lib/utils";
+import { Attendance, AttendanceRecord, User } from "@/types/types";
 
 const ZKLib = require("zklib-js");
 const zkInstance = new ZKLib(process.env.ZKTECO_IP, process.env.ZKTECO_PORT, 5200, 5000);
@@ -11,14 +11,11 @@ export async function getData(): Promise<Attendance[]> {
 
         // Get data in machine
         const users: User[] = (await zkInstance.getUsers()).data;
-        const records: Record[] = (await zkInstance.getAttendances()).data;
+        const records: AttendanceRecord[] = (await zkInstance.getAttendances()).data;
         const finalResult = correlateEntriesAndExits(records, users);
 
         // Sort descending by in time
-        const orderedResult = finalResult.sort((a, b) => new Date(b.in).getTime() - new Date(a.in).getTime());
-        console.log(orderedResult);
-        // Disconnect
-        await zkInstance.disconnect();
+        const orderedResult = orderAttendance(finalResult, "DESC");
 
         return orderedResult;
     } catch (e) {

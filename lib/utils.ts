@@ -1,5 +1,5 @@
 import { SETTINGS } from "@/settings";
-import { Attendance, Record, User } from "@/types/types";
+import { Attendance, AttendanceRecord, User } from "@/types/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -7,14 +7,14 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function groupByUser(records: Record[]): { [userId: string]: Record[] } {
+export function groupByUser(records: AttendanceRecord[]): { [userId: string]: AttendanceRecord[] } {
     return records.reduce((acc, record) => {
         if (!acc[record.deviceUserId]) {
             acc[record.deviceUserId] = [];
         }
         acc[record.deviceUserId].push(record);
         return acc;
-    }, {} as { [deviceUserId: string]: Record[] });
+    }, {} as { [deviceUserId: string]: AttendanceRecord[] });
 }
 
 function parseDate(dateString: string): number {
@@ -61,7 +61,7 @@ export const autoSizeColumns = (worksheet: any) => {
     });
 };
 
-export function correlateEntriesAndExits(records: Record[], users: User[]): Attendance[] {
+export function correlateEntriesAndExits(records: AttendanceRecord[], users: User[]): Attendance[] {
     const groupedByUser = groupByUser(records);
 
     // Create a map for quick lookup of user names by userId
@@ -83,6 +83,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
         // Iterate over the sorted records in pairs (first as "in", second as "out")
         for (let i = 0; i < sortedRecords.length; i++) {
             const entryRecord = sortedRecords[i];
+            const recordId = `${userId}-${entryRecord.recordTime}`;
 
             // Check if there's a corresponding "out" record in the same day for the last "in"
             if (i + 1 < sortedRecords.length) {
@@ -95,6 +96,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
                 if (entryDate === exitDate) {
                     // If both records are from the same day, pair them
                     inOutTimes.push({
+                        id: recordId,
                         user: userMap[userId], // Lookup the name by userId
                         in: entryRecord.recordTime ?? "N/A",
                         out: exitRecord.recordTime ?? "N/A",
@@ -104,6 +106,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
                 } else {
                     // If the "out" record is not on the same day, pair the "in" with "N/A"
                     inOutTimes.push({
+                        id: recordId,
                         user: userMap[userId], // Lookup the name by userId
                         in: entryRecord?.recordTime ?? "N/A",
                         out: "N/A", // No exit for the last entry
@@ -112,6 +115,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
             } else {
                 // If there's no corresponding "out" record (last entry of the day), pair the "in" with "N/A"
                 inOutTimes.push({
+                    id: recordId,
                     user: userMap[userId], // Lookup the name by userId
                     in: entryRecord?.recordTime ?? "N/A",
                     out: "N/A", // No exit for the last entry
@@ -122,7 +126,7 @@ export function correlateEntriesAndExits(records: Record[], users: User[]): Atte
     return inOutTimes;
 }
 
-export const normalizeData = async (data: Attendance[]): Promise<void> => {
+export const normalizeData = async (data: Attendance[]): Promise<any> => {
     /* //In/Out normalization offset
     data.forEach((attendance) => {
         attendance.in = normalizeDateEntry(attendance.in, "IN");
@@ -130,7 +134,12 @@ export const normalizeData = async (data: Attendance[]): Promise<void> => {
     }); */
 
     //Validate empty entries
-    console.log(validateEmptyEntries(data));
+    const validation = validateEmptyEntries(data);
+
+    if (validation.isValid) console.log("Data is valid");
+    else console.log("Data is not valid", validation.errors);
+
+    return validation;
 };
 
 const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
@@ -178,8 +187,9 @@ const validateEmptyEntries = (data: Attendance[]) => {
     const errors: Attendance[] = [];
     const groupedByUser: Record<string, Attendance[]> = {};
 
+    const orderedData = orderAttendance(data, "ASC");
     // Group records by user
-    data.forEach((entry) => {
+    orderedData.forEach((entry) => {
         if (!groupedByUser[entry.user]) groupedByUser[entry.user] = [];
         groupedByUser[entry.user].push(entry);
     });
@@ -187,25 +197,37 @@ const validateEmptyEntries = (data: Attendance[]) => {
     // Validate each user's entries
     Object.keys(groupedByUser).forEach((user) => {
         let lastOutExists = true; // Assume first entry is valid
+        let lastAttendance: Attendance | null = null;
 
-        groupedByUser[user].forEach((attendance) => {
+        for (const attendance of groupedByUser[user]) {
             const hasIn = attendance.in !== "N/A";
             const hasOut = attendance.out !== "N/A";
 
-            // ❌ Case: Out without a previous In
+            /* // Out without a previous In
             if (!hasIn && hasOut) {
                 errors.push(attendance);
-            }
+                break; // Exit loop, move to next user
+            } */
 
-            // ❌ Case: Consecutive "in" without a previous "out"
+            // Consecutive "in" without a previous "out"
             if (hasIn && !lastOutExists) {
-                errors.push(attendance);
+                errors.push(lastAttendance ?? attendance); // Push the previous attendance if it exists, otherwise the current one
+                break; // Exit loop, move to next user
             }
 
-            // Update tracking variable
+            // Update tracking variables
             lastOutExists = hasOut ? true : hasIn ? false : lastOutExists;
-        });
+            lastAttendance = attendance; // Store current as last attendance
+        }
     });
 
-    return { valid: errors.length === 0, errors };
+    return { isValid: errors.length === 0, errors };
+};
+
+export const orderAttendance = (data: Attendance[], order: "ASC" | "DESC") => {
+    return data.sort((a, b) => {
+        const dateA = new Date(a.in).getTime();
+        const dateB = new Date(b.in).getTime();
+        return order === "ASC" ? dateA - dateB : dateB - dateA;
+    });
 };
