@@ -1,23 +1,31 @@
 import { getData } from "@/actions/services";
+import { orderAttendance } from "@/lib/utils";
 import { Attendance, User } from "@/types/types";
 import { create } from "zustand";
 
 type DataStore = {
-    attendances: Attendance[] | null;
+    attendances: Attendance[];
     zktekoUsers: User[] | null;
-    setData: (attendances: Attendance[], zktekoUsers: User[]) => void;
+    isLoading: boolean;
+    setAttendances: (attendances: Attendance[]) => void;
     fetchAttendances: () => Promise<Attendance[]>;
 };
 
-const useAuthStore = create<DataStore>((set) => ({
-    attendances: null,
+const useDataStore = create<DataStore>((set) => ({
+    attendances: [],
     zktekoUsers: null,
-    setData: (attendances, zktekoUsers) => set({ attendances, zktekoUsers }),
+    isLoading: true,
+    setAttendances: (newAttendances: Attendance[]) => set({ attendances: orderAttendance(newAttendances, "DESC") }),
     fetchAttendances: async () => {
-        const newData = await getData();
-        set({ attendances: newData });
-        return newData;
+        try {
+            set({ isLoading: true });
+            const newData = await getData();
+            set({ attendances: newData });
+            return newData;
+        } finally {
+            set({ isLoading: false });
+        }
     },
 }));
 
-export default useAuthStore;
+export default useDataStore;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 
@@ -51,7 +51,7 @@ export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
         setSelectedDate(newDate);
     }
 
-    const handleSubmit = () => {
+    const handleApply = () => {
         onChange?.(selectedDate || new Date());
         handleClosePopover();
     };
@@ -60,8 +60,13 @@ export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
         setOpen(false);
     };
 
+    const handleOnOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (!newOpen) handleApply();
+    };
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOnOpenChange}>
             <PopoverTrigger asChild>
                 <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !selectedDate && "text-muted-foreground")}>
                     {selectedDate ? format(selectedDate, "MM/dd/yyyy hh:mm aa") : <span>Pick a date & time</span>}
@@ -128,8 +133,8 @@ export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
                     </div>
                 </div>
                 <div className="flex w-full justify-center">
-                    <Button className="w-40" onClick={handleSubmit}>
-                        Done
+                    <Button className="w-40" onClick={handleApply}>
+                        Apply
                     </Button>
                 </div>
             </PopoverContent>

@@ -6,30 +6,47 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Attendance } from "@/types/types";
 import { DateTimePicker } from "./dateTimePicker";
+import { toast } from "react-toastify";
+import useDataStore from "@/store/useDataStore";
 
 interface EditDataModalProps {
     isOpen: boolean;
     onClose: () => void;
     data: Attendance[];
-    onSubmit: (updatedData: Attendance[]) => void;
 }
 
-export function EditDataModal({ isOpen, onClose, data, onSubmit }: EditDataModalProps) {
-    console.log({ data });
+export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
     const [editableData, setEditableData] = useState<Attendance[]>(data);
-
-    const handleInputChange = (id: string, value: string) => {
-        setEditableData((prevData) => prevData.map((item) => (item.id === id ? { ...item, out: value } : item)));
-    };
+    const [correctedData, setCorrectedData] = useState<Attendance[]>(data);
+    const { attendances, setAttendances } = useDataStore();
 
     const handleSubmit = () => {
-        const isValid = editableData.every((item) => item.out !== "N/A" && item.out.trim() !== "");
+        const isValid = correctedData.every((item) => item.out !== "N/A" && item.out.trim() !== "" && item.in !== "N/A" && item.in.trim() !== "");
         if (isValid) {
-            onSubmit(editableData);
+            const newData = attendances.map((item) => {
+                const correctedItem = correctedData.find((data) => data.id === item.id);
+                return correctedItem ? { ...item, in: correctedItem.in, out: correctedItem.out } : item;
+            });
+            setAttendances(newData);
+            toast("Data updated successfully", { type: "success" });
             onClose();
         } else {
-            alert("Please fill in all 'Out' fields before submitting.");
+            toast("Please fill in all the required fields", { type: "info" });
         }
+    };
+
+    const handleDateTimeSelection = (selectedDate: Date, id: string, type: "IN" | "OUT") => {
+        const newData = correctedData.map((attendance) => {
+            if (attendance.id === id) {
+                if (type === "IN") {
+                    return { ...attendance, in: selectedDate.toString() };
+                } else if (type === "OUT") {
+                    return { ...attendance, out: selectedDate.toString() };
+                }
+            }
+            return attendance;
+        });
+        setCorrectedData(newData);
     };
 
     return (
@@ -51,8 +68,12 @@ export function EditDataModal({ isOpen, onClose, data, onSubmit }: EditDataModal
                             {editableData.map(({ id, in: inDate, out: outDate, user }) => (
                                 <TableRow key={id}>
                                     <TableCell>{user}</TableCell>
-                                    <TableCell>{inDate === "N/A" ? <DateTimePicker /> : new Date(inDate).toLocaleString()}</TableCell>
-                                    <TableCell>{outDate === "N/A" ? <DateTimePicker /> : new Date(outDate).toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        {inDate === "N/A" ? <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "IN")} /> : new Date(inDate).toLocaleString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        {outDate === "N/A" ? <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "OUT")} /> : new Date(outDate).toLocaleString()}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

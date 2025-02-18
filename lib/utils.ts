@@ -126,23 +126,26 @@ export function correlateEntriesAndExits(records: AttendanceRecord[], users: Use
     return inOutTimes;
 }
 
-export const normalizeData = async (data: Attendance[]): Promise<any> => {
-    /* //In/Out normalization offset
-    data.forEach((attendance) => {
-        attendance.in = normalizeDateEntry(attendance.in, "IN");
-        attendance.out = normalizeDateEntry(attendance.out, "OUT");
-    }); */
-
+export const validateData = async (data: Attendance[]): Promise<{ isValid: boolean; errors: Attendance[] }> => {
     //Validate empty entries
     const validation = validateEmptyEntries(data);
 
     if (validation.isValid) console.log("Data is valid");
     else console.log("Data is not valid", validation.errors);
-
     return validation;
 };
 
+export const normalizeData = async (data: Attendance[]): Promise<Attendance[]> => {
+    //In/Out normalization offset
+    return data.map((attendance) => {
+        attendance.in = normalizeDateEntry(attendance.in, "IN");
+        attendance.out = normalizeDateEntry(attendance.out, "OUT");
+        return attendance;
+    });
+};
+
 const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
+    if (input === "N/A") return "N/A";
     const date = new Date(input);
 
     //In entry validations
@@ -203,11 +206,11 @@ const validateEmptyEntries = (data: Attendance[]) => {
             const hasIn = attendance.in !== "N/A";
             const hasOut = attendance.out !== "N/A";
 
-            /* // Out without a previous In
+            // Out without a previous In
             if (!hasIn && hasOut) {
                 errors.push(attendance);
                 break; // Exit loop, move to next user
-            } */
+            }
 
             // Consecutive "in" without a previous "out"
             if (hasIn && !lastOutExists) {
@@ -226,8 +229,8 @@ const validateEmptyEntries = (data: Attendance[]) => {
 
 export const orderAttendance = (data: Attendance[], order: "ASC" | "DESC") => {
     return data.sort((a, b) => {
-        const dateA = new Date(a.in).getTime();
-        const dateB = new Date(b.in).getTime();
+        const dateA = a.in !== "N/A" ? new Date(a.in).getTime() : new Date(a.out).getTime();
+        const dateB = b.in !== "N/A" ? new Date(b.in).getTime() : new Date(b.out).getTime();
         return order === "ASC" ? dateA - dateB : dateB - dateA;
     });
 };

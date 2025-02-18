@@ -2,12 +2,13 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import ExcelJS from "exceljs";
-import { Attendance } from "@/types/types";
 import { autoSizeColumns, formatDate } from "@/lib/utils";
 import { FaFileExcel } from "react-icons/fa";
+import useDataStore from "@/store/useDataStore";
 
-export default function ExportExcelButton({ data }: { data: Attendance[] }) {
+export default function ExportExcelButton() {
     const [isLoading, setIsLoading] = React.useState(false);
+    const { attendances } = useDataStore();
 
     const exportToExcel = async () => {
         try {
@@ -15,7 +16,7 @@ export default function ExportExcelButton({ data }: { data: Attendance[] }) {
             const workbook = new ExcelJS.Workbook();
             const sheet1 = workbook.addWorksheet("Attendances");
 
-            let rows = data.map(({ user, in: inTime, out: outTime }) => {
+            let rows = attendances.map(({ user, in: inTime, out: outTime }) => {
                 const inDate = formatDate(inTime);
                 const outDate = outTime === "N/A" ? "" : formatDate(outTime);
                 return [user, inDate, outDate];
