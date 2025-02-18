@@ -1,22 +1,25 @@
 "use client";
-import React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import ExcelJS from "exceljs";
-import { autoSizeColumns, formatDate } from "@/lib/utils";
+import { autoSizeColumns, formatDate, normalizeData } from "@/lib/utils";
 import { FaFileExcel } from "react-icons/fa";
 import useDataStore from "@/store/useDataStore";
+import { NormalizationAlertDialog } from "./normalizationAlertDialogue";
 
 export default function ExportExcelButton() {
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const { attendances } = useDataStore();
+    const [open, setOpen] = useState(false);
 
-    const exportToExcel = async () => {
+    const exportToExcel = async (normalizedData?: boolean) => {
         try {
             setIsLoading(true);
             const workbook = new ExcelJS.Workbook();
             const sheet1 = workbook.addWorksheet("Attendances");
+            const data = normalizedData ? await normalizeData(attendances) : attendances;
 
-            let rows = attendances.map(({ user, in: inTime, out: outTime }) => {
+            let rows = data.map(({ user, in: inTime, out: outTime }) => {
                 const inDate = formatDate(inTime);
                 const outDate = outTime === "N/A" ? "" : formatDate(outTime);
                 return [user, inDate, outDate];
@@ -47,7 +50,7 @@ export default function ExportExcelButton() {
             const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "output.xlsx";
+            link.download = `${normalizedData ? "Normalized_Attendances" : "Raw_Attendances"}.xlsx`;
 
             // Simulate a click to start the download
             link.click();
@@ -58,9 +61,27 @@ export default function ExportExcelButton() {
         }
     };
 
+    const openAlertDialogue = () => {
+        setOpen(true);
+    };
+
     return (
-        <Button onClick={exportToExcel} isLoading={isLoading}>
-            <FaFileExcel /> Export to Excel
-        </Button>
+        <>
+            <Button onClick={openAlertDialogue} isLoading={isLoading}>
+                <FaFileExcel /> Export to Excel
+            </Button>
+            {open && (
+                <NormalizationAlertDialog
+                    open={open}
+                    setOpen={setOpen}
+                    callback={() => {
+                        exportToExcel(false);
+                    }}
+                    callback2={() => {
+                        exportToExcel(true);
+                    }}
+                />
+            )}
+        </>
     );
 }

@@ -137,11 +137,11 @@ export const validateData = async (data: Attendance[]): Promise<{ isValid: boole
 
 export const normalizeData = async (data: Attendance[]): Promise<Attendance[]> => {
     //In/Out normalization offset
-    return data.map((attendance) => {
-        attendance.in = normalizeDateEntry(attendance.in, "IN");
-        attendance.out = normalizeDateEntry(attendance.out, "OUT");
-        return attendance;
-    });
+    return data.map((attendance) => ({
+        ...attendance,
+        in: normalizeDateEntry(attendance.in, "IN"),
+        out: normalizeDateEntry(attendance.out, "OUT"),
+    }));
 };
 
 const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
@@ -150,8 +150,8 @@ const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
 
     //In entry validations
     if (type === "IN") {
+        debugger;
         const minutesDifference = getMinutesDifference(date, SETTINGS.timeIn);
-
         // minutes difference above
         if (minutesDifference >= 0 && minutesDifference < SETTINGS.registryOffset) date.setMinutes(0, 0, 0);
         // minutes difference below
@@ -181,7 +181,7 @@ function getMinutesDifference(dateInput: Date, timeString: string, absolute = fa
     const differenceMs = dateInput.getTime() - referenceDate.getTime();
 
     // Convert milliseconds to minutes
-    const differenceMinutes = Math.round(differenceMs / (1000 * 60)); // Returns difference in minutes
+    const differenceMinutes = differenceMs / (1000 * 60); // Returns difference in minutes
 
     return absolute ? Math.abs(differenceMinutes) : differenceMinutes;
 }

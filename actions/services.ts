@@ -8,7 +8,7 @@ const zkInstance = new ZKLib(process.env.ZKTECO_IP, process.env.ZKTECO_PORT, 520
 
 export async function getData(): Promise<Attendance[]> {
     try {
-        /*  // Create socket to machine
+        // Create socket to machine
         await zkInstance.createSocket();
 
         // Get data in machine
@@ -20,9 +20,9 @@ export async function getData(): Promise<Attendance[]> {
         const orderedResult = orderAttendance(finalResult, "DESC");
         console.log({ orderedResult });
         // Close socket
-        await zkInstance.disconnect(); */
+        await zkInstance.disconnect();
 
-        const orderedResult = [
+        /* const orderedResult = [
             {
                 id: "62-Mon Feb 17 2025 14:17:43 GMT-0500 (Eastern Standard Time)",
                 user: "Juan Carlos Prieto",
@@ -623,7 +623,7 @@ export async function getData(): Promise<Attendance[]> {
                 in: "N/A",
                 out: "Wed Feb 12 2025 17:01:27 GMT-0500 (Eastern Standard Time)",
             },
-        ];
+        ]; */
 
         return orderedResult;
     } catch (e) {
