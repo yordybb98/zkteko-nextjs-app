@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import useDataStore from "@/store/useDataStore";
 import { normalizeData, validateData } from "@/lib/utils";
+import useEditModalStore from "@/store/useEditModalStore";
 
 export default function ImportOdooButton() {
     const [isLoading, setIsLoading] = useState(false);
     const { attendances } = useDataStore();
+    const { openModal } = useEditModalStore();
     const importFn = async () => {
         try {
             setIsLoading(true);
             const validation = await validateData(attendances);
             if (!validation.isValid) {
                 toast("There are errors in the data, please fix them", { type: "info" });
+                openModal(validation.errors);
                 return;
             }
             const normalizedAttendances = await normalizeData(attendances);

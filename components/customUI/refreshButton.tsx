@@ -2,10 +2,12 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import useDataStore from "@/store/useDataStore";
 
-export default function RefreshButton({ callback }: { callback: () => void }) {
+export default function RefreshButton() {
+    const { fetchAttendances, isLoading } = useDataStore();
     return (
-        <Button variant="outline" onClick={callback}>
+        <Button onClick={fetchAttendances} isLoading={isLoading}>
             Refresh
         </Button>
     );

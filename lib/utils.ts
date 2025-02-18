@@ -150,7 +150,6 @@ const normalizeDateEntry = (input: string, type: "IN" | "OUT"): string => {
 
     //In entry validations
     if (type === "IN") {
-        debugger;
         const minutesDifference = getMinutesDifference(date, SETTINGS.timeIn);
         // minutes difference above
         if (minutesDifference >= 0 && minutesDifference < SETTINGS.registryOffset) date.setMinutes(0, 0, 0);

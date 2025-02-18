@@ -8,15 +8,10 @@ import { Attendance } from "@/types/types";
 import { DateTimePicker } from "./dateTimePicker";
 import { toast } from "react-toastify";
 import useDataStore from "@/store/useDataStore";
+import useEditModalStore from "@/store/useEditModalStore";
 
-interface EditDataModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    data: Attendance[];
-}
-
-export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
-    const [editableData, setEditableData] = useState<Attendance[]>(data);
+export function EditDataModal() {
+    const { isOpen, data, closeModal } = useEditModalStore();
     const [correctedData, setCorrectedData] = useState<Attendance[]>(data);
     const { attendances, setAttendances } = useDataStore();
 
@@ -29,7 +24,7 @@ export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
             });
             setAttendances(newData);
             toast("Data updated successfully", { type: "success" });
-            onClose();
+            closeModal();
         } else {
             toast("Please fill in all the required fields", { type: "info" });
         }
@@ -50,7 +45,7 @@ export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={closeModal}>
             <DialogContent className="max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>Edit Data</DialogTitle>
@@ -65,7 +60,7 @@ export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {editableData.map(({ id, in: inDate, out: outDate, user }) => (
+                            {data.map(({ id, in: inDate, out: outDate, user }) => (
                                 <TableRow key={id}>
                                     <TableCell>{user}</TableCell>
                                     <TableCell>
@@ -80,7 +75,7 @@ export function EditDataModal({ isOpen, onClose, data }: EditDataModalProps) {
                     </Table>
                 </div>
                 <DialogFooter>
-                    <Button onClick={onClose} variant="outline">
+                    <Button onClick={closeModal} variant="outline">
                         Cancel
                     </Button>
                     <Button onClick={handleSubmit}>Submit</Button>

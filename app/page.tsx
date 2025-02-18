@@ -3,6 +3,7 @@ import { getData } from "@/actions/services";
 import ExportExcelButton from "@/components/customUI/exportExcelButton";
 import ImportOdooButton from "@/components/customUI/importOdooButton";
 import CheckErrorsButton from "@/components/customUI/checkErrorsButton";
+import RefreshButton from "@/components/customUI/refreshButton";
 
 export default async function Home() {
     return (
@@ -10,6 +11,7 @@ export default async function Home() {
             <h1>ZKTeco Luxe App</h1>
 
             <div className="flex justify-end gap-2">
+                <RefreshButton />
                 <CheckErrorsButton />
                 <ImportOdooButton />
                 <ExportExcelButton />
