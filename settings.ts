@@ -7,3 +7,5 @@ export const SETTINGS: Settings = {
     lunchEnd: "13:00",
     registryOffset: 15, // in minutes
 };
+
+export const BASE_API_URL = "http://192.168.0.155:3000";

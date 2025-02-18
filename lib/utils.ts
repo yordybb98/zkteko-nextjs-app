@@ -233,3 +233,24 @@ export const orderAttendance = (data: Attendance[], order: "ASC" | "DESC") => {
         return order === "ASC" ? dateA - dateB : dateB - dateA;
     });
 };
+
+export const getInitials = (name: string): string => {
+    // Eliminar espacios adicionales y dividir el nombre en partes
+    const nameParts = name.trim().split(/\s+/);
+
+    // Si solo hay una parte (nombre sin apellido)
+    if (nameParts.length === 1) {
+        const [firstName] = nameParts;
+        // Retorna las dos primeras letras del nombre, o el nombre completo si es menor de dos letras
+        return firstName.length > 1 ? firstName.slice(0, 2).toUpperCase() : firstName.toUpperCase();
+    }
+
+    // Si hay más de una parte (nombre y apellido)
+    if (nameParts.length >= 2) {
+        const [firstName, lastName] = nameParts;
+        // Retorna la inicial del nombre y la inicial del apellido
+        return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
+    }
+
+    return "";
+};

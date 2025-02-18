@@ -6,6 +6,7 @@ import useDataStore from "@/store/useDataStore";
 import { normalizeData, validateData } from "@/lib/utils";
 import useEditModalStore from "@/store/useEditModalStore";
 import { HiUpload } from "react-icons/hi";
+import { BASE_API_URL } from "@/settings";
 
 export default function ImportOdooButton() {
     const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function ImportOdooButton() {
                 return;
             }
             const normalizedAttendances = await normalizeData(attendances);
-            const a = await fetch("http://localhost:3000/odoo/attendance", {
+            const a = await fetch(`${BASE_API_URL}/odoo/attendance`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

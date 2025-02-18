@@ -1,5 +1,6 @@
 "use server";
 
+import logger from "@/lib/logger";
 import { correlateEntriesAndExits, orderAttendance } from "@/lib/utils";
 import { Attendance, AttendanceRecord, User } from "@/types/types";
 
@@ -9,19 +10,22 @@ const zkInstance = new ZKLib(process.env.ZKTECO_IP, process.env.ZKTECO_PORT, 520
 export async function getData(): Promise<Attendance[]> {
     try {
         // Create socket to machine
+        logger.info("Creating socket...");
         await zkInstance.createSocket();
 
         // Get data in machine
+        logger.info("Getting users...");
         const users: User[] = (await zkInstance.getUsers()).data;
+        logger.info("Getting attendances...");
         const records: AttendanceRecord[] = (await zkInstance.getAttendances()).data;
+        logger.info("Correlating entries and exits...");
         const finalResult = correlateEntriesAndExits(records, users);
-
+        logger.info("Sorting by in time...");
         // Sort descending by in time
         const orderedResult = orderAttendance(finalResult, "DESC");
-        console.log({ orderedResult });
         // Close socket
+        logger.info("Closing socket...");
         await zkInstance.disconnect();
-
         /* const orderedResult = [
             {
                 id: "62-Mon Feb 17 2025 14:17:43 GMT-0500 (Eastern Standard Time)",
