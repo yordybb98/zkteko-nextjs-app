@@ -22,37 +22,39 @@ export function NormalizationAlertDialog({ open, setOpen, callback, callback2 }:
                 </div>
                 <AlertDialogHeader>
                     <AlertDialogTitle>How do you want to export the Data</AlertDialogTitle>
-                    <AlertDialogDescription className="flex flex-col gap-4">
-                        Choose how you want to export the data. You can either export the raw data as it is or normalize it for better readability and consistency.
-                        <table>
+                    <div className="flex flex-col gap-4">
+                        <p>Choose how you want to export the data. You can either export the raw data as it is or normalize it for better readability and consistency.</p>
+
+                        <table className="w-full border-collapse border border-gray-300">
                             <thead>
-                                <tr>
-                                    <th>Raw Data</th>
-                                    <th>Normalized Data</th>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 px-4 py-2">Raw Data</th>
+                                    <th className="border border-gray-300 px-4 py-2">Normalized Data</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>7:58 AM</td>
-                                    <td>8:00 AM</td>
+                                    <td className="border border-gray-300 px-4 py-2">7:58 AM</td>
+                                    <td className="border border-gray-300 px-4 py-2">8:00 AM</td>
                                 </tr>
                                 <tr>
-                                    <td>4:56 PM</td>
-                                    <td>5:00 PM</td>
+                                    <td className="border border-gray-300 px-4 py-2">4:56 PM</td>
+                                    <td className="border border-gray-300 px-4 py-2">5:00 PM</td>
                                 </tr>
                                 <tr>
-                                    <td>5:12 PM</td>
-                                    <td>5:00 PM</td>
+                                    <td className="border border-gray-300 px-4 py-2">5:12 PM</td>
+                                    <td className="border border-gray-300 px-4 py-2">5:00 PM</td>
                                 </tr>
                             </tbody>
                         </table>
-                        Normalization rounds time to the nearest hour, making reports easier to analyze.
-                    </AlertDialogDescription>
+
+                        <p>Normalization rounds time to the nearest hour, making reports easier to analyze.</p>
+                    </div>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
+                <div className="flex justify-evenly">
                     <AlertDialogAction onClick={callback}>Raw Data</AlertDialogAction>
                     <AlertDialogAction onClick={callback2}>Normalized Data</AlertDialogAction>
-                </AlertDialogFooter>
+                </div>
             </AlertDialogContent>
         </AlertDialog>
     );
