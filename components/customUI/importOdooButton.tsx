@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import useDataStore from "@/store/useDataStore";
 import { normalizeData, validateData } from "@/lib/utils";
 import useEditModalStore from "@/store/useEditModalStore";
+import { HiUpload } from "react-icons/hi";
 
 export default function ImportOdooButton() {
     const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function ImportOdooButton() {
 
     return (
         <Button onClick={importFn} isLoading={isLoading}>
+            <HiUpload />
             Import to Odoo
         </Button>
     );

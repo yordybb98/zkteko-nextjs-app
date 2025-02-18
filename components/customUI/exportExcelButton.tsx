@@ -67,8 +67,8 @@ export default function ExportExcelButton() {
 
     return (
         <>
-            <Button onClick={openAlertDialogue} isLoading={isLoading}>
-                <FaFileExcel /> Export to Excel
+            <Button onClick={openAlertDialogue} isLoading={isLoading} icon={<FaFileExcel />}>
+                Export to Excel
             </Button>
             {open && (
                 <NormalizationAlertDialog
