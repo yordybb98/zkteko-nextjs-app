@@ -8,13 +8,13 @@ import useDataStore from "@/store/useDataStore";
 import { NormalizationAlertDialog } from "./normalizationAlertDialogue";
 
 export default function ExportExcelButton() {
-    const [isLoading, setIsLoading] = useState(false);
-    const { attendances } = useDataStore();
+    const [isLoadingExport, setIsLoadingExport] = useState(false);
+    const { attendances, isLoading } = useDataStore();
     const [open, setOpen] = useState(false);
 
     const exportToExcel = async (normalizedData?: boolean) => {
         try {
-            setIsLoading(true);
+            setIsLoadingExport(true);
             const workbook = new ExcelJS.Workbook();
             const sheet1 = workbook.addWorksheet("Attendances");
             const data = normalizedData ? await normalizeData(attendances) : attendances;
@@ -57,7 +57,7 @@ export default function ExportExcelButton() {
         } catch (e) {
             console.log(e);
         } finally {
-            setIsLoading(false);
+            setIsLoadingExport(false);
         }
     };
 
@@ -67,7 +67,7 @@ export default function ExportExcelButton() {
 
     return (
         <>
-            <Button onClick={openAlertDialogue} isLoading={isLoading} icon={<FaFileExcel />}>
+            <Button onClick={openAlertDialogue} isLoading={isLoadingExport} icon={<FaFileExcel />} disabled={isLoading}>
                 Export to Excel
             </Button>
             {open && (

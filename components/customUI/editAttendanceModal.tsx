@@ -9,29 +9,29 @@ import { DateTimePicker } from "./dateTimePicker";
 import { toast } from "react-toastify";
 import useDataStore from "@/store/useDataStore";
 import useEditModalStore from "@/store/useEditModalStore";
+import { setFixedTime } from "@/lib/utils";
 
 export function EditDataModal() {
-    const { isOpen, data, closeModal } = useEditModalStore();
-    const [correctedData, setCorrectedData] = useState<Attendance[]>(data);
+    const { isOpen, data, setData, closeModal } = useEditModalStore();
     const { attendances, setAttendances } = useDataStore();
 
     const handleSubmit = () => {
-        const isValid = correctedData.every((item) => item.out !== "N/A" && item.out.trim() !== "" && item.in !== "N/A" && item.in.trim() !== "");
+        const isValid = data.every((item) => item.out !== "N/A" && item.out.trim() !== "" && item.in !== "N/A" && item.in.trim() !== "");
         if (isValid) {
             const newData = attendances.map((item) => {
-                const correctedItem = correctedData.find((data) => data.id === item.id);
+                const correctedItem = data.find((data) => data.id === item.id);
                 return correctedItem ? { ...item, in: correctedItem.in, out: correctedItem.out } : item;
             });
             setAttendances(newData);
             toast("Data updated successfully", { type: "success" });
             closeModal();
         } else {
-            toast("Please fill in all the required fields", { type: "info" });
+            toast("Please fill in all the required fields", { type: "warning" });
         }
     };
 
     const handleDateTimeSelection = (selectedDate: Date, id: string, type: "IN" | "OUT") => {
-        const newData = correctedData.map((attendance) => {
+        const newData = data.map((attendance) => {
             if (attendance.id === id) {
                 if (type === "IN") {
                     return { ...attendance, in: selectedDate.toString() };
@@ -41,7 +41,7 @@ export function EditDataModal() {
             }
             return attendance;
         });
-        setCorrectedData(newData);
+        setData(newData);
     };
 
     return (
@@ -64,10 +64,18 @@ export function EditDataModal() {
                                 <TableRow key={id}>
                                     <TableCell>{user}</TableCell>
                                     <TableCell>
-                                        {inDate === "N/A" ? <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "IN")} /> : new Date(inDate).toLocaleString()}
+                                        {inDate === "N/A" ? (
+                                            <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "IN")} autoCompleteDate={setFixedTime(outDate, 8)} />
+                                        ) : (
+                                            new Date(inDate).toLocaleString()
+                                        )}
                                     </TableCell>
                                     <TableCell>
-                                        {outDate === "N/A" ? <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "OUT")} /> : new Date(outDate).toLocaleString()}
+                                        {outDate === "N/A" ? (
+                                            <DateTimePicker onChange={(selectedDate) => handleDateTimeSelection(selectedDate, id, "OUT")} autoCompleteDate={setFixedTime(inDate, 17)} />
+                                        ) : (
+                                            new Date(outDate).toLocaleString()
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

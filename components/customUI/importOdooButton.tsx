@@ -9,12 +9,12 @@ import { HiUpload } from "react-icons/hi";
 import { BASE_API_URL } from "@/settings";
 
 export default function ImportOdooButton() {
-    const [isLoading, setIsLoading] = useState(false);
-    const { attendances } = useDataStore();
+    const [isLoadingImport, setIsLoadingImport] = useState(false);
+    const { attendances, isLoading } = useDataStore();
     const { openModal } = useEditModalStore();
     const importFn = async () => {
         try {
-            setIsLoading(true);
+            setIsLoadingImport(true);
             const validation = await validateData(attendances);
             if (!validation.isValid) {
                 toast("There are errors in the data, please fix them", { type: "info" });
@@ -22,6 +22,7 @@ export default function ImportOdooButton() {
                 return;
             }
             const normalizedAttendances = await normalizeData(attendances);
+            console.log({ normalizedAttendances });
             const a = await fetch(`${BASE_API_URL}/odoo/attendance`, {
                 method: "POST",
                 headers: {
@@ -39,13 +40,12 @@ export default function ImportOdooButton() {
         } catch (e) {
             console.log(e);
         } finally {
-            setIsLoading(false);
+            setIsLoadingImport(false);
         }
     };
 
     return (
-        <Button onClick={importFn} isLoading={isLoading}>
-            <HiUpload />
+        <Button onClick={importFn} isLoading={isLoadingImport} disabled={isLoading} icon={<HiUpload />}>
             Import to Odoo
         </Button>
     );

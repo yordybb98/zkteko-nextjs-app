@@ -254,3 +254,9 @@ export const getInitials = (name: string): string => {
 
     return "";
 };
+
+export const setFixedTime = (date: Date | string, hours: number, minutes: number = 0, seconds: number = 0, ms: number = 0): Date => {
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, seconds, ms);
+    return newDate;
+};

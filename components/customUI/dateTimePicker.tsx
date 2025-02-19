@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 
@@ -12,10 +12,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DateTimePickerProps {
     defaultDate?: Date;
+    autoCompleteDate?: Date;
     onChange?: (date: Date) => void;
 }
 
-export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
+export function DateTimePicker({ defaultDate, autoCompleteDate, onChange }: DateTimePickerProps) {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(defaultDate);
     const [open, setOpen] = useState(false);
 
@@ -32,6 +33,12 @@ export function DateTimePicker({ defaultDate, onChange }: DateTimePickerProps) {
             });
         }
     }
+
+    useEffect(() => {
+        if (open && autoCompleteDate) {
+            setSelectedDate(autoCompleteDate);
+        }
+    }, [open, autoCompleteDate]);
 
     function handleTimeChange(type: "hour" | "minute" | "ampm", value: string) {
         if (!selectedDate) return;

@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,12 +6,14 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { login } from "@/actions/auth";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const router = useRouter();
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -23,14 +23,11 @@ export default function LoginForm() {
 
         try {
             const res = await login(formData);
-
             if (res.error) {
                 toast.error(res.error);
             } else {
                 // Initialize WebSocket connection
                 const session = await getSession();
-                console.log("CONNECTING.........");
-
                 // Save credentials to local storage
                 if (rememberMe) {
                     localStorage.setItem("username", username);
@@ -41,9 +38,10 @@ export default function LoginForm() {
                     localStorage.removeItem("password");
                     localStorage.removeItem("rememberMe");
                 }
-                window.location.reload();
+                window.location.href = "/";
             }
         } catch (error: any) {
+            console.log("error here", error);
             toast.error("An unexpected error occurred. Please try again.");
         } finally {
             setIsLoading(false);

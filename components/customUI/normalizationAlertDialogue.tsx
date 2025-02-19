@@ -1,15 +1,6 @@
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "../ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 
 export function NormalizationAlertDialog({ open, setOpen, callback, callback2 }: { open: boolean; setOpen: (open: boolean) => void; callback: () => void; callback2: () => void }) {
     return (
@@ -22,9 +13,10 @@ export function NormalizationAlertDialog({ open, setOpen, callback, callback2 }:
                 </div>
                 <AlertDialogHeader>
                     <AlertDialogTitle>How do you want to export the Data</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Choose how you want to export the data. You can either export the raw data as it is or normalize it for better readability and consistency.
+                    </AlertDialogDescription>
                     <div className="flex flex-col gap-4">
-                        <p>Choose how you want to export the data. You can either export the raw data as it is or normalize it for better readability and consistency.</p>
-
                         <table className="w-full border-collapse border border-gray-300">
                             <thead>
                                 <tr className="bg-gray-100">

@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { LayoutGrid, User } from "lucide-react";
+"use server";
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { auth } from "@/auth";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { Button } from "./button";
@@ -42,7 +41,7 @@ export async function UserNav() {
                             <p className="text-xs leading-none text-muted-foreground">{session?.user?.role.name}</p>
                         </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    {/* <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem className="hover:cursor-pointer" asChild>
                             <Link href="#" className="flex items-center">
@@ -56,7 +55,7 @@ export async function UserNav() {
                                 Account
                             </Link>
                         </DropdownMenuItem>
-                    </DropdownMenuGroup>
+                    </DropdownMenuGroup> */}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="hover:cursor-pointer">
                         <SignOutButton />

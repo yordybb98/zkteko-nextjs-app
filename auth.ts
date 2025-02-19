@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { BASE_API_URL } from "./settings";
 
@@ -21,13 +21,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }),
                 });
 
-                if (res.ok) {
-                    const user = await res.json();
-                    alert(user);
-                    if (user && user.role) return user;
+                if (!res.ok) {
+                    throw new Error("Invalid username or password.");
                 }
 
-                return null;
+                const user = await res.json();
+
+                if (!user.role.permissions.includes("ViewAttendances")) {
+                    throw new Error("You do not have permission to view attendances.");
+                }
+
+                return user;
             },
         }),
     ],
