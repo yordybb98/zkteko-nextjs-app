@@ -6,26 +6,35 @@ import { Attendance, AttendanceRecord, User } from "@/types/types";
 
 const ZKLib = require("zklib-js");
 const zkInstance = new ZKLib(process.env.ZKTECO_IP, process.env.ZKTECO_PORT, 5200, 5000);
+const zkInstance2 = new ZKLib(process.env.ZKTECO2_IP, process.env.ZKTECO2_PORT, 5200, 5000);
+const zkInstance3 = new ZKLib(process.env.ZKTECO3_IP, process.env.ZKTECO3_PORT, 5200, 5000);
 
 export async function getData(): Promise<Attendance[]> {
     try {
         // Create socket to machine
-        logger.info("Creating socket...");
-        await zkInstance.createSocket();
 
-        // Get data in machine
-        logger.info("Getting users...");
-        const users: User[] = (await zkInstance.getUsers()).data;
-        logger.info("Getting attendances...");
-        const records: AttendanceRecord[] = (await zkInstance.getAttendances()).data;
+        // Get data in machine1
+        logger.info("Getting data fromm server1...");
+        const dataMachine1 = await getDataFromZkteco(zkInstance);
+
+        // Get data in machine2
+        logger.info("Getting data fromm server2...");
+        const dataMachine2 = await getDataFromZkteco(zkInstance2);
+
+        // Get data in machine3
+        logger.info("Getting data fromm server3...");
+        const dataMachine3 = await getDataFromZkteco(zkInstance3);
+
+        // Merge results
+        const usersMerge = [...dataMachine1.users, ...dataMachine2.users, ...dataMachine3.users];
+
+        const attendancesMerge = [...dataMachine1.records, ...dataMachine2.records, ...dataMachine3.records];
+
         logger.info("Correlating entries and exits...");
-        const finalResult = correlateEntriesAndExits(records, users);
-        logger.info("Sorting by in time...");
-        // Sort descending by in time
-        const orderedResult = orderAttendance(finalResult, "DESC");
-        // Close socket
-        logger.info("Closing socket...");
-        await zkInstance.disconnect();
+        const finalResultMerge = correlateEntriesAndExits(attendancesMerge, usersMerge);
+
+        logger.info("Sorting attendance...");
+        const orderedResult = orderAttendance(finalResultMerge, "DESC");
         /* const orderedResult = [
             {
                 id: "62-Mon Feb 17 2025 14:17:43 GMT-0500 (Eastern Standard Time)",
@@ -630,6 +639,25 @@ export async function getData(): Promise<Attendance[]> {
         ]; */
 
         return orderedResult;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+
+export async function getDataFromZkteco(zkInstance: any): Promise<{ users: User[]; records: AttendanceRecord[] }> {
+    try {
+        // Get data in machine
+        logger.info("Creating socket...");
+        await zkInstance.createSocket();
+        logger.info("Getting users...");
+        const users: User[] = (await zkInstance.getUsers()).data;
+        logger.info("Getting attendances...");
+        const records: AttendanceRecord[] = (await zkInstance.getAttendances()).data;
+        logger.info("Closing socket...");
+        await zkInstance.disconnect();
+
+        return { users, records };
     } catch (e) {
         console.log(e);
         throw e;
