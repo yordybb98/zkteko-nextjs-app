@@ -208,13 +208,13 @@ const validateEmptyEntries = (data: Attendance[]) => {
             // Out without a previous In
             if (!hasIn && hasOut) {
                 errors.push(attendance);
-                break; // Exit loop, move to next user
+                //break; // Exit loop, move to next user
             }
 
             // Consecutive "in" without a previous "out"
             if (hasIn && !lastOutExists) {
                 errors.push(lastAttendance ?? attendance); // Push the previous attendance if it exists, otherwise the current one
-                break; // Exit loop, move to next user
+                // break; // Exit loop, move to next user
             }
 
             // Update tracking variables

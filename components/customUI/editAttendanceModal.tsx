@@ -48,7 +48,7 @@ export function EditDataModal() {
         <Dialog open={isOpen} onOpenChange={closeModal}>
             <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                    <DialogTitle>Edit Data</DialogTitle>
+                    <DialogTitle>Edit Data ({data.length} entries)</DialogTitle>
                 </DialogHeader>
                 <div className="max-h-[60vh] overflow-y-auto">
                     <Table>
